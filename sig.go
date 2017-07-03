@@ -172,6 +172,35 @@ func RSign(curve *btcec.KoblitzCurve,
 	return sBig, nil
 }
 
+// Compute the predicted signature s*G
+// it's just R - h(R||m)A
+func SGpredict(curve *btcec.KoblitzCurve,
+	msg []byte, Pub, R *btcec.PublicKey) (*btcec.PublicKey, error) {
+
+	// h = Hash(R || m)
+	Rpxb := BigIntToEncodedBytes(R.X)
+	hashInput := make([]byte, 0, scalarSize*2)
+	hashInput = append(hashInput, Rpxb[:]...)
+	hashInput = append(hashInput, msg...)
+	h := chainhash.HashB(hashInput)
+
+	// h * A
+	Pub.X, Pub.Y = curve.ScalarMult(Pub.X, Pub.Y, h)
+
+	// this works?
+	Pub.Y.Neg(Pub.Y)
+	//	Pub.Y = Pub.Y.Neg()
+
+	Pub.Y.Mod(Pub.Y, curve.P)
+
+	sG := new(btcec.PublicKey)
+
+	// Pub has been negated; add it to R
+	sG.X, sG.Y = curve.Add(R.X, R.Y, Pub.X, Pub.Y)
+
+	return sG, nil
+}
+
 // schnorrVerify is the internal function for verification of a secp256k1
 // Schnorr signature. A secure hash function may be passed for the calculation
 // of r.

@@ -14,13 +14,14 @@ import (
 func main() {
 	c := btcec.S256()
 
-	//	privBytes := chainhash.HashB([]byte("private key"))
+	privBytes := chainhash.HashB([]byte("private key..."))
 
-	priv, _ := btcec.PrivKeyFromBytes(c, []byte("private key"))
+	priv, pub := btcec.PrivKeyFromBytes(c, privBytes)
 
 	//	pubkey := priv.PubKey()
 
-	k, _ := btcec.PrivKeyFromBytes(c, []byte("this is k"))
+	kBytes := chainhash.HashB([]byte("this is k"))
+	k, r := btcec.PrivKeyFromBytes(c, kBytes)
 
 	m := chainhash.HashB([]byte("message to sign"))
 
@@ -29,8 +30,19 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("r:%x\ns:%s\n", k.PubKey().SerializeCompressed(),
-		s.String())
+
+	ssg := new(btcec.PublicKey)
+	ssg.X, ssg.Y = c.ScalarBaseMult(s.Bytes())
+
+	fmt.Printf("r:%x\ns:%s\nsg:%x\n", k.PubKey().SerializeCompressed(),
+		s.String(), ssg.SerializeCompressed())
+
+	sg, err := SGpredict(c, m, pub, r)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("sg:%x\n", sg.SerializeCompressed())
 
 }
 
