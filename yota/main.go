@@ -23,16 +23,25 @@ func main() {
 
 	o1 := Hash(i1)
 
-	fmt.Printf("i1: %s\n", tritsToString(i1))
-	fmt.Printf("o1: %s\n", tritsToString(o1))
+	c := NewCurl()
+	c.Absorb(o1)
 
-	i2 := append(zeros, zeros...)
-	i2 = append(i2, ones...)
+	for i := 0; i < 100000; i++ {
+		c.Transform()
+	}
 
-	o2 := Hash(i2)
+	x := c.Squeeze()
 
-	fmt.Printf("i2: %s\n", tritsToString(i2))
-	fmt.Printf("o2: %s\n", tritsToString(o2))
+	fmt.Printf("x: %s\n", tritsToString(x))
+	//	fmt.Printf("o1: %s\n", tritsToString(o1))
+
+	//	i2 := append(zeros, zeros...)
+	//	i2 = append(i2, ones...)
+
+	//	o2 := Hash(i2)
+
+	//	fmt.Printf("i2: %s\n", tritsToString(i2))
+	//	fmt.Printf("o2: %s\n", tritsToString(o2))
 
 }
 
@@ -48,35 +57,25 @@ func tritsToString(in []uint8) string {
 
 \  0  1  2 b
   ---------
-0| 2  1  0
+0| 2  2  0
  |
-1| 0  0  2
+1| 1  0  2
  |
-2| 1  2  1
+2| 0  1  1
 a
+
+made into a line:
+
+x = 4a+b
+
+x = 0 1 2 3 4 5 6 7 8 9 A
+y = 2 2 0 _ 1 0 2 _ 0 1 1
+
+
 */
 
 func sBox(a, b uint8) uint8 {
-	if a > 2 || b > 2 {
-		fmt.Printf("error, non 0/1/2 value")
-		return 0
-	}
-
-	if a == 0 {
-		return 2 - b
-	}
-
-	if a == 1 {
-		if b == 2 {
-			return 2
-		}
-		return 0
-	}
-
-	if b == 2 {
-		return 1
-	}
-	return b + 1
+	return box[(a<<2)+b]
 }
 
 //constants for Sizes.
@@ -87,6 +86,8 @@ const (
 
 var (
 	indices [stateSize + 1]int
+
+	box = [11]uint8{2, 2, 0, 5, 1, 0, 2, 5, 0, 1, 1}
 )
 
 func indexInit() {

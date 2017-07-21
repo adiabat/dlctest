@@ -45,5 +45,3 @@ func main() {
 	fmt.Printf("sg:%x\n", sg.SerializeCompressed())
 
 }
-
-//func guessS
