@@ -74,10 +74,6 @@ y = 2 2 0 _ 1 0 2 _ 0 1 1
 
 */
 
-func sBox(a, b uint8) uint8 {
-	return box[(a<<2)+b]
-}
-
 //constants for Sizes.
 const (
 	stateSize = 729
@@ -139,7 +135,7 @@ func (c *Curl) Transform() {
 		copy(cpy[:], c.state)
 		c.state = c.state[:stateSize]
 		for i := 0; i < stateSize; i++ {
-			c.state[i] = sBox(cpy[indices[i]], cpy[indices[i+1]])
+			c.state[i] = box[(cpy[indices[i]]<<2)+cpy[indices[i+1]]]
 		}
 	}
 }
